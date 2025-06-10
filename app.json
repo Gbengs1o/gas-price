@@ -1,0 +1,68 @@
+{
+  "expo": {
+    "name": "GasPrice Nigeria",
+    "slug": "gasprice-nigeria",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/images/icon.png",
+    "scheme": "gaspricenigeria",
+    "userInterfaceStyle": "automatic",
+    "splash": {
+      "image": "./assets/images/splash-icon.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#ffffff"
+    },
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.yourname.gaspricenigeria",
+      "config": {
+        "googleMapsApiKey": "AIzaSyCHkNvB2RLbbyZT9YthpyVDxGSP4Z7qF9o"
+      }
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/images/adaptive-icon.png",
+        "backgroundColor": "#ffffff"
+      },
+      "package": "com.yourname.gaspricenigeria",
+      "config": {
+        "googleMaps": {
+          "apiKey": "AIzaSyCHkNvB2RLbbyZT9YthpyVDxGSP4Z7qF9o"
+        }
+      },
+      "permissions": [
+        "android.permission.ACCESS_COARSE_LOCATION",
+        "android.permission.ACCESS_FINE_LOCATION"
+      ]
+    },
+    "web": {
+      "bundler": "metro",
+      "output": "static",
+      "favicon": "./assets/images/favicon.png",
+      "config": {
+        "googleMaps": {
+          "apiKey": "AIzaSyCHkNvB2RLbbyZT9YthpyVDxGSP4Z7qF9o"
+        }
+      }
+    },
+    "plugins": [
+      "expo-router",
+      [
+        "expo-location",
+        {
+          "locationAlwaysAndWhenInUsePermission": "Allow GasPrice Nigeria to use your location to find nearby stations."
+        }
+      ],
+      "expo-web-browser"
+    ],
+    "experiments": {
+      "typedRoutes": true
+    },
+    "extra": {
+      "eas": {
+        "projectId": "974cfc38-9485-4dad-ac04-aa5c46b42a76"
+      },
+      "router": {}
+    }
+  }
+}
