@@ -1,31 +1,53 @@
 // File: app/_layout.tsx
 
-import { Stack } from 'expo-router';
-import { AuthProvider } from '../context/AuthContext'; // 1. Import our new provider
+import { Stack, SplashScreen } from 'expo-router';
+import { AuthProvider } from '../context/AuthContext';
+import { ThemeProvider, useTheme } from '../context/ThemeContext';
+import { useEffect } from 'react';
 
-export default function RootLayout() {
-  
-  // The font loading logic can be added back here later.
+SplashScreen.preventAutoHideAsync();
+
+function ThemedApp() {
+  const { isLoadingTheme } = useTheme();
+
+  useEffect(() => {
+    if (!isLoadingTheme) SplashScreen.hideAsync();
+  }, [isLoadingTheme]);
+
+  if (isLoadingTheme) return null;
 
   return (
-    // 2. The AuthProvider now wraps the entire application.
-    // This makes the user's session and status available on every screen.
-    <AuthProvider>
-      <Stack>
-        {/* This screen will show our tab navigator */}
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        
-        {/* This is the new, correct route for adding a station.
-            The name "addStation" must match the filename "addStation.tsx". */}
-        <Stack.Screen 
-          name="addStation" 
-          options={{ presentation: 'modal', title: "Pin New Station Location" }} 
-        />
-        
-        {/* The old 'submit-report' route is no longer needed since 'addStation' replaced it. 
-            It has been removed to keep the code clean. */}
+    <Stack>
+      {/* Main app screens */}
+      <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+      <Stack.Screen name="(auth)" options={{ headerShown: false }} />
+      
+      {/* Existing Full-screen pages */}
+      <Stack.Screen name="station/[id]" options={{ headerShown: true, title: "Station Details" }} />
 
-      </Stack>
-    </AuthProvider>
+      {/* --- NEW: Full-screen profile page --- */}
+      <Stack.Screen name="profile" options={{ headerShown: true, title: "My Profile" }} />
+
+      {/* Modal screens */}
+      <Stack.Screen name="addStation" options={{ presentation: 'modal', title: "Add New Station" }} />
+      <Stack.Screen name="report/submit" options={{ presentation: 'modal', title: "Submit Fuel Report" }} />
+      <Stack.Screen name="locationSearch" options={{ presentation: 'modal', title: "Select Location" }} />
+
+      {/* --- NEW: Modal settings pages --- */}
+      <Stack.Screen name="change-password" options={{ presentation: 'modal', title: "Change Password" }} />
+      <Stack.Screen name="privacy-policy" options={{ presentation: 'modal', title: "Privacy Policy" }} />
+      <Stack.Screen name="contact-us" options={{ presentation: 'modal', title: "Contact Us" }} />
+      <Stack.Screen name="delete-account" options={{ presentation: 'modal', title: "Delete Account" }} />
+    </Stack>
+  );
+}
+
+export default function RootLayout() {
+  return (
+    <ThemeProvider>
+      <AuthProvider>
+        <ThemedApp />
+      </AuthProvider>
+    </ThemeProvider>
   );
 }

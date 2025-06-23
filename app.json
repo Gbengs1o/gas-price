@@ -25,6 +25,7 @@
         "backgroundColor": "#ffffff"
       },
       "package": "com.yourname.gaspricenigeria",
+      "googleServicesFile": "./google-services.json",
       "config": {
         "googleMaps": {
           "apiKey": "AIzaSyCHkNvB2RLbbyZT9YthpyVDxGSP4Z7qF9o"
@@ -53,7 +54,10 @@
           "locationAlwaysAndWhenInUsePermission": "Allow GasPrice Nigeria to use your location to find nearby stations."
         }
       ],
-      "expo-web-browser"
+      "expo-web-browser",
+      "expo-secure-store",
+      "@react-native-google-signin/google-signin",
+      "expo-notifications"
     ],
     "experiments": {
       "typedRoutes": true
