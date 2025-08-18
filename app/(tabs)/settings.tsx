@@ -1,28 +1,44 @@
 // File: app/(tabs)/settings.tsx
 
-import React, { useState } from 'react';
-import { StyleSheet, Text, View, Pressable, Image, ActivityIndicator, ScrollView, Switch } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { StyleSheet, Text, View, Pressable, ActivityIndicator, ScrollView, Switch } from 'react-native';
 import { useAuth } from '../../context/AuthContext';
 import { useRouter } from 'expo-router';
+import { useIsFocused } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 
 import { useTheme } from '../../context/ThemeContext';
 import { Colors } from '../../constants/Colors';
 import { SettingsRow } from '../../components/SettingsRow';
+import { LetterAvatar } from '../../components/LetterAvatar';
 
 export default function SettingsScreen() {
   const { theme } = useTheme();
   const colors = Colors[theme];
-  const { user, signOut, isLoading: isAuthLoading } = useAuth();
+  // --- MODIFIED ---
+  // Destructure the new `isProfileLoading` state from the context
+  const { user, profile, fetchProfile, signOut, isLoading: isAuthLoading, isProfileLoading } = useAuth();
   const router = useRouter();
+  const isFocused = useIsFocused();
 
   const [notificationsEnabled, setNotificationsEnabled] = useState(true);
+
+  // Re-fetch the profile every time the settings tab is viewed.
+  // This is now safe and won't cause a flicker.
+  useEffect(() => {
+    if (isFocused && user) {
+      fetchProfile(user);
+    }
+  }, [isFocused, user]); // Note: `fetchProfile` is stable due to useCallback in context
 
   const handleSignOut = () => {
     signOut(() => router.replace('/(auth)/signIn'));
   };
 
-  if (isAuthLoading || !user) {
+  // --- MODIFIED LOADING LOGIC ---
+
+  // Show a loader during the initial app session load
+  if (isAuthLoading) {
     return (
       <View style={[styles.container, styles.centerContent, { backgroundColor: colors.background }]}>
         <ActivityIndicator size="large" color={colors.primary} />
@@ -30,15 +46,47 @@ export default function SettingsScreen() {
     );
   }
 
+  // Show a loader ONLY if the profile is being fetched for the very first time
+  if (isProfileLoading && !profile) {
+    return (
+      <View style={[styles.container, styles.centerContent, { backgroundColor: colors.background }]}>
+        <ActivityIndicator size="large" color={colors.primary} />
+      </View>
+    );
+  }
+
+  // Show an error/empty state if the profile failed to load and isn't loading anymore
+  if (!profile) {
+    return (
+      <View style={[styles.container, styles.centerContent, { backgroundColor: colors.background }]}>
+        <Text style={{ color: colors.text }}>Could not load user profile.</Text>
+        <Pressable style={styles.logoutButton} onPress={handleSignOut}>
+            <Text style={styles.logoutButtonText}>Logout</Text>
+        </Pressable>
+      </View>
+    );
+  }
+
   return (
-    <ScrollView style={[styles.container, { backgroundColor: colors.background }]} contentContainerStyle={styles.contentContainer}>
-      
+    <ScrollView 
+      style={[styles.container, { backgroundColor: colors.background }]} 
+      contentContainerStyle={styles.contentContainer}
+    >
+      {/* --- NEW: Subtle loading indicator for refreshes --- */}
+      {isProfileLoading && (
+        <View style={styles.refreshingIndicator}>
+          <ActivityIndicator size="small" color={colors.primary} />
+        </View>
+      )}
+
       <View style={styles.profileHeader}>
-        <Image
-          source={user.user_metadata?.avatar_url ? { uri: user.user_metadata.avatar_url } : require('../../assets/images/icon.png')}
-          style={[styles.avatar, { borderColor: colors.primary }]}
+        <LetterAvatar 
+          avatarUrl={profile.avatar_url} 
+          name={profile.full_name}
+          size={120}
+          textStyle={{ fontSize: 48 }}
         />
-        <Text style={[styles.name, { color: colors.text }]}>{user.user_metadata?.full_name || "Fuel Finder User"}</Text>
+        <Text style={[styles.name, { color: colors.text }]}>{profile.full_name || "Fuel Finder User"}</Text>
       </View>
 
       <View style={styles.section}>
@@ -75,11 +123,20 @@ export default function SettingsScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
-  contentContainer: { padding: 16 },
-  centerContent: { justifyContent: 'center', alignItems: 'center' },
+  contentContainer: { 
+    flexGrow: 1,
+    padding: 16,
+    paddingBottom: 80,
+  },
+  centerContent: { justifyContent: 'center', alignItems: 'center', padding: 16 },
+  refreshingIndicator: {
+    position: 'absolute',
+    top: 10,
+    alignSelf: 'center',
+    zIndex: 10,
+  },
   profileHeader: { alignItems: 'center', marginBottom: 30 },
-  avatar: { width: 120, height: 120, borderRadius: 60, borderWidth: 3, marginBottom: 16 },
-  name: { fontSize: 22, fontWeight: 'bold', marginBottom: 8 },
+  name: { fontSize: 22, fontWeight: 'bold', marginTop: 16 },
   section: { marginBottom: 20 },
   switchRow: { flexDirection: 'row', alignItems: 'center', paddingVertical: 12, paddingHorizontal: 12, borderRadius: 8, borderWidth: 1, marginBottom: 20 },
   switchTextContainer: { flex: 1 },

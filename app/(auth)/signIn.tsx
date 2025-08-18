@@ -1,152 +1,166 @@
-// File: app/(auth)/signIn.tsx
-
+// Corrected: app/(auth)/signin.tsx
 import React, { useState } from 'react';
-import { Alert, StyleSheet, View, TextInput, Pressable, Text, ActivityIndicator } from 'react-native';
-import { Link, useRouter } from 'expo-router'; // 1. Import the useRouter hook
-import { supabase } from '../../lib/supabase';
+import {
+    StyleSheet,
+    Text,
+    TextInput,
+    Pressable,
+    View,
+    SafeAreaView,
+    KeyboardAvoidingView,
+    ScrollView,
+    Platform,
+    Alert,
+    ActivityIndicator, // --- FIX: Imported the missing component ---
+} from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
+import { Link, useRouter } from 'expo-router';
+import { supabase } from '../../lib/supabase'; // Make sure this path is correct
+
+const themeColors = {
+    background: '#FFFFFF',
+    title: '#2A2A2A',
+    inputBorder: '#B8B8B8',
+    placeholder: '#D0D0D0',
+    text: '#2A2A2A',
+    primary: '#EDAE10',
+    primaryText: '#FFFFFF',
+    error: '#F44336',
+    link: '#EDAE10',
+};
 
 export default function SignInScreen() {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [loading, setLoading] = useState(false);
-  const router = useRouter(); // 2. Initialize the router
+    const router = useRouter();
+    const [email, setEmail] = useState('');
+    const [password, setPassword] = useState('');
+    const [isPasswordVisible, setIsPasswordVisible] = useState(false);
+    const [isLoading, setIsLoading] = useState(false);
 
-  async function signInWithEmail() {
-    if (loading) return;
-    setLoading(true);
-    const { error } = await supabase.auth.signInWithPassword({
-      email: email,
-      password: password,
-    });
+    const handleSignIn = async () => {
+        if (!email || !password) {
+            Alert.alert('Error', 'Please enter both email and password.');
+            return;
+        }
+        
+        setIsLoading(true);
 
-    if (error) {
-      Alert.alert('Sign In Failed', error.message);
-    } else {
-      // --- THIS IS THE FIX ---
-      // On a successful sign-in, manually and explicitly navigate to the home screen.
-      // We use `replace` to prevent the user from pressing "back" to the sign-in screen.
-      router.replace('/(tabs)/home');
-    }
-    setLoading(false);
-  }
+        try {
+            const { data, error } = await supabase.auth.signInWithPassword({
+                email: email,
+                password: password,
+            });
 
-  return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Welcome Back!</Text>
-      <Text style={styles.subtitle}>Sign in to your account</Text>
-      
-      <TextInput
-        style={styles.input}
-        placeholder="Email"
-        value={email}
-        onChangeText={setEmail}
-        autoCapitalize="none"
-        keyboardType="email-address"
-        placeholderTextColor="#888"
-      />
-      <TextInput
-        style={styles.input}
-        placeholder="Password"
-        value={password}
-        onChangeText={setPassword}
-        secureTextEntry
-        placeholderTextColor="#888"
-      />
+            if (error) {
+                throw error;
+            }
 
-      <Link href="/auth/forgotPassword" asChild>
-        <Pressable style={styles.forgotPasswordButton}>
-          <Text style={styles.forgotPasswordText}>Forgot Password?</Text>
-        </Pressable>
-      </Link>
-      
-      <Pressable
-        style={[styles.button, styles.signInButton, loading && styles.buttonDisabled]}
-        onPress={signInWithEmail}
-        disabled={loading}
-      >
-        {loading ? (
-          <ActivityIndicator color="#fff" />
-        ) : (
-          <Text style={styles.buttonText}>Sign In</Text>
-        )}
-      </Pressable>
+            router.replace('/(tabs)/home');
+            
+        } catch (error: any) {
+            Alert.alert('Sign In Failed', error.message || 'An unexpected error occurred.');
+        } finally {
+            setIsLoading(false);
+        }
+    };
 
-      {/* --- FIX FOR THE LINK PATH --- */}
-      {/* The path should not include the group parentheses */}
-      <Link href="/(auth)/signup" asChild>
-        <Pressable style={styles.linkButton}>
-          <Text style={styles.linkText}>Don't have an account? <Text style={{fontWeight: 'bold'}}>Sign Up</Text></Text>
-        </Pressable>
-      </Link>
-    </View>
-  );
+    return (
+        <SafeAreaView style={styles.safeArea}>
+            <KeyboardAvoidingView
+                behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+                style={styles.keyboardAvoiding}
+            >
+                <ScrollView
+                    contentContainerStyle={styles.container}
+                    keyboardShouldPersistTaps="handled"
+                >
+                    <Text style={styles.title}>Sign in</Text>
+
+                    <View style={styles.inputContainer}>
+                        <TextInput
+                            style={styles.input}
+                            placeholder="Email or Phone Number"
+                            placeholderTextColor={themeColors.placeholder}
+                            value={email}
+                            onChangeText={setEmail}
+                            autoCapitalize="none"
+                            keyboardType="email-address"
+                        />
+                    </View>
+
+                    <View style={styles.inputContainer}>
+                        <TextInput
+                            style={styles.input}
+                            placeholder="Enter Your Password"
+                            placeholderTextColor={themeColors.placeholder}
+                            value={password}
+                            onChangeText={setPassword}
+                            secureTextEntry={!isPasswordVisible}
+                        />
+                        <Pressable onPress={() => setIsPasswordVisible(!isPasswordVisible)}>
+                            <Ionicons
+                                name={isPasswordVisible ? 'eye-off' : 'eye'}
+                                size={24}
+                                color={themeColors.inputBorder}
+                            />
+                        </Pressable>
+                    </View>
+
+                    <Link href="/(auth)/forgetpassword" asChild>
+                        <Pressable>
+                            <Text style={styles.forgotPassword}>Forgot password?</Text>
+                        </Pressable>
+                    </Link>
+
+                    <Pressable
+                        style={({ pressed }) => [
+                            styles.button,
+                            { opacity: pressed || isLoading ? 0.8 : 1 },
+                        ]}
+                        onPress={handleSignIn}
+                        disabled={isLoading}
+                    >
+                        {isLoading ? (
+                            <ActivityIndicator color={themeColors.primaryText} />
+                        ) : (
+                            <Text style={styles.buttonText}>Sign In</Text>
+                        )}
+                    </Pressable>
+
+                    <View style={styles.separatorContainer}>
+                        <View style={styles.separatorLine} />
+                        <Text style={styles.separatorText}>or</Text>
+                        <View style={styles.separatorLine} />
+                    </View>
+
+                    <Text style={styles.footerText}>
+                        Don’t have an account?{' '}
+                        <Link href="/(auth)/signup" asChild>
+                            <Pressable>
+                                <Text style={styles.linkText}>Sign Up</Text>
+                            </Pressable>
+                        </Link>
+                    </Text>
+                </ScrollView>
+            </KeyboardAvoidingView>
+        </SafeAreaView>
+    );
 }
 
-// --- Styles remain the same ---
+
+// STYLES
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 20,
-    backgroundColor: '#f5f5f5',
-  },
-  title: {
-    fontSize: 32,
-    fontWeight: 'bold',
-    marginBottom: 8,
-    color: '#333',
-  },
-  subtitle: {
-    fontSize: 16,
-    color: '#666',
-    marginBottom: 40,
-  },
-  input: {
-    width: '100%',
-    height: 50,
-    backgroundColor: '#fff',
-    borderColor: '#ddd',
-    borderWidth: 1,
-    borderRadius: 8,
-    paddingHorizontal: 15,
-    fontSize: 16,
-    marginBottom: 15,
-    color: '#333',
-  },
-  forgotPasswordButton: {
-    alignSelf: 'flex-end',
-    marginBottom: 10,
-    padding: 5,
-  },
-  forgotPasswordText: {
-    color: '#007BFF',
-    fontSize: 14,
-  },
-  button: {
-    width: '100%',
-    paddingVertical: 15,
-    borderRadius: 8,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  signInButton: {
-    backgroundColor: '#007BFF',
-  },
-  buttonDisabled: {
-    opacity: 0.7,
-  },
-  buttonText: {
-    color: 'white',
-    fontSize: 18,
-    fontWeight: 'bold',
-  },
-  linkButton: {
-    marginTop: 20,
-    padding: 10,
-  },
-  linkText: {
-    color: '#007BFF',
-    fontSize: 16,
-  },
+    safeArea: { flex: 1, backgroundColor: themeColors.background },
+    keyboardAvoiding: { flex: 1 },
+    container: { flexGrow: 1, justifyContent: 'center', paddingHorizontal: 24 },
+    title: { fontSize: 24, fontFamily: 'Poppins-Medium', color: themeColors.title, marginBottom: 30 },
+    inputContainer: { height: 60, flexDirection: 'row', alignItems: 'center', borderWidth: 1, borderColor: themeColors.inputBorder, borderRadius: 8, paddingHorizontal: 20, marginBottom: 10 },
+    input: { flex: 1, fontSize: 16, fontFamily: 'Poppins-Medium', color: themeColors.text },
+    forgotPassword: { fontSize: 14, fontFamily: 'Poppins-Medium', color: themeColors.error, textAlign: 'right', marginBottom: 20, paddingVertical: 5 },
+    button: { height: 54, backgroundColor: themeColors.primary, justifyContent: 'center', alignItems: 'center', borderRadius: 8, marginTop: 10 },
+    buttonText: { fontSize: 16, fontFamily: 'Poppins-Medium', color: themeColors.primaryText },
+    separatorContainer: { flexDirection: 'row', alignItems: 'center', marginVertical: 30 },
+    separatorLine: { flex: 1, height: 1, backgroundColor: themeColors.inputBorder },
+    separatorText: { marginHorizontal: 10, fontSize: 16, fontFamily: 'Poppins-Medium', color: themeColors.inputBorder },
+    footerText: { fontSize: 16, fontFamily: 'Poppins-Medium', color: themeColors.text, textAlign: 'center' },
+    linkText: { fontSize: 16, fontFamily: 'Poppins-Medium', color: themeColors.link, fontWeight: 'bold' },
 });

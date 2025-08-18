@@ -11,14 +11,14 @@ import {
     KeyboardAvoidingView,
     Platform,
 } from 'react-native';
-// --- FIX: Corrected import paths from ../../ to ../ ---
-import { useTheme } from '../context/ThemeContext';
-import { Colors } from '../constants/Colors';
+// --- FIX: Removed unused theme imports ---
+// import { useTheme } from '../context/ThemeContext';
+// import { Colors } from '../constants/Colors';
 import { Ionicons } from '@expo/vector-icons';
 import { supabase } from '../lib/supabase';
 
-// A simple fallback if you don't use a theme context in this file
-const FallbackTheme = {
+// --- FIX: Defined a static light theme object to enforce light mode ---
+const lightColors = {
     background: '#FFFFFF',
     text: '#2A2A2A',
     primary: '#EDAE10',
@@ -29,6 +29,7 @@ const FallbackTheme = {
 };
 
 // Reusable Password Input Component
+// --- FIX: The component now receives the static lightColors object ---
 const PasswordInput = ({ label, value, onChangeText, colors }) => {
     const [isPasswordVisible, setIsPasswordVisible] = useState(false);
     return (
@@ -54,8 +55,8 @@ const PasswordInput = ({ label, value, onChangeText, colors }) => {
 };
 
 export default function ChangePasswordScreen({ navigation }) {
-    const { theme } = useTheme ? useTheme() : { theme: 'light' };
-    const colors = theme ? Colors[theme] : FallbackTheme;
+    // --- FIX: Replaced dynamic theme logic with the static lightColors object ---
+    const colors = lightColors;
 
     const [oldPassword, setOldPassword] = useState('');
     const [newPassword, setNewPassword] = useState('');
@@ -91,7 +92,7 @@ export default function ChangePasswordScreen({ navigation }) {
                 'Your password has been changed successfully.',
                 [{ text: 'OK', onPress: () => navigation?.goBack() }]
             );
-        } catch (error: any) {
+        } catch (error) {
             Alert.alert('Failed to Change Password', error.message || 'An unexpected error occurred.');
         } finally {
             setIsLoading(false);
@@ -103,6 +104,7 @@ export default function ChangePasswordScreen({ navigation }) {
             behavior={Platform.OS === "ios" ? "padding" : "height"}
             style={{ flex: 1 }}
         >
+            {/* The ScrollView and its children will now use the hardcoded light theme colors */}
             <ScrollView
                 style={[styles.container, { backgroundColor: colors.background }]}
                 contentContainerStyle={styles.contentContainer}

@@ -1,7 +1,8 @@
 // File: app/(tabs)/profile.tsx
 
 import React, { useState, useEffect, useCallback } from 'react';
-import { StyleSheet, View, Text, Pressable, Alert, ActivityIndicator, TextInput, ScrollView } from 'react-native';
+// We still need KeyboardAvoidingView for a good user experience
+import { StyleSheet, View, Text, Pressable, Alert, ActivityIndicator, TextInput, ScrollView, KeyboardAvoidingView, Platform } from 'react-native';
 import { useAuth } from '../../context/AuthContext';
 import { useRouter } from 'expo-router';
 import { useIsFocused } from '@react-navigation/native';
@@ -44,7 +45,7 @@ export default function ProfileScreen() {
                 setPriceReportCount(statsRes.data[0].price_report_count);
                 setStationAddCount(statsRes.data[0].station_add_count);
             }
-        } catch (error: any) { Alert.alert("Error", "Could not fetch profile data."); } 
+        } catch (error: any) { Alert.alert("Error", "Could not fetch profile data."); }
         finally { setIsLoading(false); }
     }, [user]);
 
@@ -67,7 +68,7 @@ export default function ProfileScreen() {
             Alert.alert('Permission Denied', 'We need access to your photos to upload an avatar.');
             return;
         }
-        
+
         try {
             const result = await ImagePicker.launchImageLibraryAsync({
                 mediaTypes: ImagePicker.MediaTypeOptions.Images,
@@ -110,7 +111,7 @@ export default function ProfileScreen() {
             setIsLoading(false);
         }
     };
-    
+
     const handleSignOut = () => { signOut(() => router.replace('/(auth)/signIn')); };
 
     if (isAuthLoading || isLoading) {
@@ -119,73 +120,87 @@ export default function ProfileScreen() {
     if (!user || !profile) {
         return <View style={[styles.container, styles.centerContent, { backgroundColor: colors.background }]}><Text style={{ color: colors.text }}>Could not load profile.</Text></View>;
     }
-    
-    // --- THIS IS THE MODIFIED LAYOUT ---
-    return (
-        <ScrollView style={[styles.scrollContainer, { backgroundColor: colors.background }]} contentContainerStyle={styles.container}>
-            <Pressable onPress={handlePickAvatar} style={styles.avatarContainer}>
-                <LetterAvatar avatarUrl={profile.avatar_url} name={profile.full_name} />
-                <View style={[styles.cameraIconContainer, { backgroundColor: colors.primary }]}>
-                    <Ionicons name="camera" size={20} color={colors.primaryText} />
-                </View>
-            </Pressable>
-            
-            {/* Display user's name first */}
-            <Text style={[styles.name, { color: colors.text }]}>{profile.full_name}</Text>
-            <Text style={[styles.email, { color: colors.textSecondary }]}>{user.email}</Text>
-            
-            {/* Stats Section moved here */}
-            <View style={[styles.statsContainer, { borderBottomColor: colors.cardBorder, borderTopColor: colors.cardBorder }]}>
-                <View style={styles.statBox}>
-                    <Text style={[styles.statValue, { color: colors.text }]}>{priceReportCount ?? 0}</Text>
-                    <Text style={[styles.statLabel, { color: colors.textSecondary }]}>Price Reports</Text>
-                </View>
-                <View style={styles.statBox}>
-                    <Text style={[styles.statValue, { color: colors.text }]}>{stationAddCount ?? 0}</Text>
-                    <Text style={[styles.statLabel, { color: colors.textSecondary }]}>Stations Added</Text>
-                </View>
-            </View>
 
-            {/* User Info Form */}
-            <View style={styles.inputGroup}>
-                <View style={styles.inputContainer}>
-                    <Text style={[styles.label, { color: colors.textSecondary }]}>Phone Number</Text>
-                    <TextInput style={[styles.input, { color: colors.text, borderColor: colors.cardBorder, backgroundColor: colors.cardBackground }]} value={profile.phone_number || ''} placeholder="e.g. 08012345678" placeholderTextColor={colors.textSecondary} keyboardType="phone-pad" onChangeText={(text) => setProfile(p => p ? { ...p, phone_number: text } : null)} />
-                </View>
-                <View style={styles.inputContainer}>
-                    <Text style={[styles.label, { color: colors.textSecondary }]}>Street Address</Text>
-                    <TextInput style={[styles.input, { color: colors.text, borderColor: colors.cardBorder, backgroundColor: colors.cardBackground }]} value={profile.street || ''} placeholder="e.g. 123 Main Street" placeholderTextColor={colors.textSecondary} onChangeText={(text) => setProfile(p => p ? { ...p, street: text } : null)} />
-                </View>
-                <View style={styles.inputContainer}>
-                    <Text style={[styles.label, { color: colors.textSecondary }]}>City</Text>
-                    <TextInput style={[styles.input, { color: colors.text, borderColor: colors.cardBorder, backgroundColor: colors.cardBackground }]} value={profile.city || ''} placeholder="e.g. Ibadan" placeholderTextColor={colors.textSecondary} onChangeText={(text) => setProfile(p => p ? { ...p, city: text } : null)} />
-                </View>
+    return (
+        <KeyboardAvoidingView
+            style={styles.pageContainer}
+            behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        >
+            <View style={[styles.pageContainer, { backgroundColor: colors.background }]}>
+                <Pressable onPress={handleSignOut} style={styles.logoutIcon}>
+                    <Ionicons name="log-out-outline" size={28} color={colors.textSecondary} />
+                </Pressable>
+                
+                <ScrollView contentContainerStyle={styles.container}>
+                    <Pressable onPress={handlePickAvatar} style={styles.avatarContainer}>
+                        <LetterAvatar avatarUrl={profile.avatar_url} name={profile.full_name} />
+                        <View style={[styles.cameraIconContainer, { backgroundColor: colors.primary }]}>
+                            <Ionicons name="camera" size={20} color={colors.primaryText} />
+                        </View>
+                    </Pressable>
+
+                    <Text style={[styles.name, { color: colors.text }]}>{profile.full_name}</Text>
+                    <Text style={[styles.email, { color: colors.textSecondary }]}>{user.email}</Text>
+
+                    <View style={[styles.statsContainer, { borderBottomColor: colors.cardBorder, borderTopColor: colors.cardBorder }]}>
+                        <View style={styles.statBox}>
+                            <Text style={[styles.statValue, { color: colors.text }]}>{priceReportCount ?? 0}</Text>
+                            <Text style={[styles.statLabel, { color: colors.textSecondary }]}>Price Reports</Text>
+                        </View>
+                        <View style={styles.statBox}>
+                            <Text style={[styles.statValue, { color: colors.text }]}>{stationAddCount ?? 0}</Text>
+                            <Text style={[styles.statLabel, { color: colors.textSecondary }]}>Stations Added</Text>
+                        </View>
+                    </View>
+
+                    <View style={styles.inputGroup}>
+                        <View style={styles.inputContainer}>
+                            <Text style={[styles.label, { color: colors.textSecondary }]}>Phone Number</Text>
+                            <TextInput style={[styles.input, { color: colors.text, borderColor: colors.cardBorder, backgroundColor: colors.cardBackground }]} value={profile.phone_number || ''} placeholder="e.g. 08012345678" placeholderTextColor={colors.textSecondary} keyboardType="phone-pad" onChangeText={(text) => setProfile(p => p ? { ...p, phone_number: text } : null)} />
+                        </View>
+                        <View style={styles.inputContainer}>
+                            <Text style={[styles.label, { color: colors.textSecondary }]}>Street Address</Text>
+                            <TextInput style={[styles.input, { color: colors.text, borderColor: colors.cardBorder, backgroundColor: colors.cardBackground }]} value={profile.street || ''} placeholder="e.g. 123 Main Street" placeholderTextColor={colors.textSecondary} onChangeText={(text) => setProfile(p => p ? { ...p, street: text } : null)} />
+                        </View>
+                        <View style={styles.inputContainer}>
+                            <Text style={[styles.label, { color: colors.textSecondary }]}>City</Text>
+                            <TextInput style={[styles.input, { color: colors.text, borderColor: colors.cardBorder, backgroundColor: colors.cardBackground }]} value={profile.city || ''} placeholder="e.g. Ibadan" placeholderTextColor={colors.textSecondary} onChangeText={(text) => setProfile(p => p ? { ...p, city: text } : null)} />
+                        </View>
+                    </View>
+
+                    <Pressable style={[styles.button, { backgroundColor: colors.primary }]} onPress={handleUpdateProfile} disabled={isLoading}>
+                        <Text style={[styles.buttonText, { color: colors.primaryText }]}>Update Profile</Text>
+                    </Pressable>
+                </ScrollView>
             </View>
-            
-            <Pressable style={[styles.button, { backgroundColor: colors.primary }]} onPress={handleUpdateProfile} disabled={isLoading}>
-                <Text style={[styles.buttonText, { color: colors.primaryText }]}>Update Profile</Text>
-            </Pressable>
-            
-            <Pressable style={[styles.button, { backgroundColor: colors.error, marginTop: 12 }]} onPress={handleSignOut}>
-                <Text style={[styles.buttonText, { color: colors.primaryText }]}>Sign Out</Text>
-            </Pressable>
-        </ScrollView>
+        </KeyboardAvoidingView>
     );
 }
 
-// --- NEW Themed Styles with layout changes ---
 const styles = StyleSheet.create({
-    scrollContainer: {
+    pageContainer: {
         flex: 1,
     },
+    logoutIcon: {
+        position: 'absolute',
+        top: 20,
+        right: 20,
+        zIndex: 10,
+    },
+    // --- THIS IS THE FIX ---
     container: {
+        flexGrow: 1, // This allows the container to grow and enables scrolling
         alignItems: 'center',
-        paddingVertical: 20,
+        paddingTop: 70, // Added more padding to clear the logout icon
         paddingHorizontal: 20,
+        // Increased padding at the bottom to ensure the "Update Profile" button
+        // is always visible above the tab bar when scrolling to the end.
+        paddingBottom: 100, 
     },
-    centerContent: { 
+    // --- END FIX ---
+    centerContent: {
         flex: 1,
-        justifyContent: 'center' 
+        justifyContent: 'center'
     },
     avatarContainer: {
         marginBottom: 12,
@@ -205,30 +220,30 @@ const styles = StyleSheet.create({
         fontSize: 22,
         fontWeight: 'bold',
     },
-    email: { 
-        fontSize: 16, 
+    email: {
+        fontSize: 16,
         marginBottom: 20,
     },
-    statsContainer: { 
-        flexDirection: 'row', 
-        justifyContent: 'space-around', 
-        width: '100%', 
+    statsContainer: {
+        flexDirection: 'row',
+        justifyContent: 'space-around',
+        width: '100%',
         paddingVertical: 20,
         borderTopWidth: 1,
         borderBottomWidth: 1,
         marginBottom: 24,
     },
-    statBox: { 
+    statBox: {
         alignItems: 'center',
         flex: 1,
     },
-    statValue: { 
-        fontSize: 24, 
-        fontWeight: 'bold', 
+    statValue: {
+        fontSize: 24,
+        fontWeight: 'bold',
     },
-    statLabel: { 
-        fontSize: 14, 
-        marginTop: 4 
+    statLabel: {
+        fontSize: 14,
+        marginTop: 4
     },
     inputGroup: {
         width: '100%',
@@ -248,15 +263,16 @@ const styles = StyleSheet.create({
         paddingHorizontal: 12,
         fontSize: 16,
     },
-    button: { 
-        width: '100%', 
-        padding: 15, 
-        borderRadius: 8, 
-        alignItems: 'center', 
+    button: {
+        width: '100%',
+        padding: 15,
+        borderRadius: 8,
+        alignItems: 'center',
         justifyContent: 'center',
+        marginTop: 10,
     },
-    buttonText: { 
-        fontSize: 16, 
-        fontWeight: 'bold', 
+    buttonText: {
+        fontSize: 16,
+        fontWeight: 'bold',
     },
 });
