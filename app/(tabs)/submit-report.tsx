@@ -6,7 +6,7 @@ import {
     KeyboardAvoidingView, Platform, Alert, ActivityIndicator
 } from 'react-native';
 import { router } from 'expo-router';
-import { supabase } from '../lib/supabase'; // Make sure this path is correct
+import { supabase } from '../../lib/supabase'; // Make sure this path is correct
 
 // For this mock-up, we are only adding a new station.
 // In a real app, you'd add a price report linked to a station ID.

@@ -1,13 +1,13 @@
 // File: components/home/StationCard.tsx
 
-import React from 'react';
-import { View, Text, StyleSheet, Pressable } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
+import React from 'react';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
 
-import { useTheme } from '../../context/ThemeContext';
 import { Colors } from '../../constants/Colors';
-import { DbStation } from '../../app/(tabs)/home';
+import { useTheme } from '../../context/ThemeContext';
+import { DbStation } from './home';
 
 interface StationCardProps {
     station: DbStation;

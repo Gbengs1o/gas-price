@@ -1,19 +1,19 @@
 // File: app/(tabs)/search.tsx
 
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
-import { StyleSheet, View, Text, SectionList, TextInput, ActivityIndicator, Alert, Pressable, Modal, TouchableWithoutFeedback, FlatList } from 'react-native';
-import { useRouter } from 'expo-router';
-import * as Location from 'expo-location';
-import { useIsFocused } from '@react-navigation/native';
-import { supabase } from '../../lib/supabase';
-import { useDebounce } from '../../hooks/useDebounce';
-import StationCard from '../../components/home/StationCard';
 import { FontAwesome, MaterialCommunityIcons } from '@expo/vector-icons';
-import { useFilterStore } from '../../stores/useFilterStore';
-import { useTheme } from '../../context/ThemeContext';
+import { useIsFocused } from '@react-navigation/native';
+import * as Location from 'expo-location';
+import { useRouter } from 'expo-router';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import { ActivityIndicator, Alert, Modal, Pressable, SectionList, StyleSheet, Text, TextInput, View } from 'react-native';
 import { Colors } from '../../constants/Colors';
 import { useAuth } from '../../context/AuthContext';
+import { useTheme } from '../../context/ThemeContext';
+import { useDebounce } from '../../hooks/useDebounce';
+import { supabase } from '../../lib/supabase';
+import { useFilterStore } from '../../stores/useFilterStore';
 import { DbStation as OriginalDbStation } from './home';
+import StationCard from './StationCard';
 
 // Define the "ideal" station object we want after our logic is done
 export type DbStation = OriginalDbStation & {
@@ -26,9 +26,8 @@ type ThemeColors = typeof Colors.light | typeof Colors.dark;
 
 const POPULAR_BRANDS = ["Mobil", "NNPC", "Rainoil", "Conoil", "PPMC", "Total", "Ascon Oil", "OANDO"];
 
-// --- Helper Components ---
+// --- Helper Components (Unchanged) ---
 const PriceSummary = React.memo(({ stations, colors }: { stations: DbStation[], colors: ThemeColors }) => {
-    // NOTE: Using a custom color scheme for the header, so this component's styles are derived separately.
     const themedStyles = useMemo(() => getThemedStyles(colors, {}), [colors]);
     const summary = useMemo(() => {
         const stationsWithPrice = stations.filter(s => s.latest_pms_price != null);
@@ -62,12 +61,11 @@ export default function SearchScreen() {
     const { theme } = useTheme();
     const colors: ThemeColors = Colors[theme];
     
-    // NEW: Custom colors for the header to match the user's image
     const customColors = {
-        background: '#FEF9E7', // Creamy beige
-        border: '#F3B95F',     // Gold
-        text: '#333333',         // Dark gray for text
-        icon: '#555555',         // Slightly lighter gray for icon
+        background: '#FEF9E7',
+        border: '#F3B95F',
+        text: '#333333',
+        icon: '#555555',
     };
 
     const styles = useMemo(() => getThemedStyles(colors, customColors), [colors, customColors]);
@@ -100,7 +98,6 @@ export default function SearchScreen() {
 
     const handleToggleFavourite = async (station: DbStation) => {
         if (!user) { return Alert.alert("Authentication Required", "Please sign in to add favourites."); }
-        // ... (rest of the function is unchanged)
         const isCurrentlyFavourite = favouriteIds.has(station.id);
         const originalFavouriteIds = new Set(favouriteIds);
         const newIds = new Set(favouriteIds);
@@ -115,7 +112,6 @@ export default function SearchScreen() {
         }
     };
 
-    // ... (All data fetching logic remains the same)
     const fetchFilteredStations = useCallback(async () => {
         if (!locationFilter) return;
         setIsLoading(true);
@@ -212,47 +208,58 @@ export default function SearchScreen() {
             })();
         }
     }, [isFocused, locationFilter, setLocationFilter]);
-    // ... (Filtering logic remains the same)
+    
     const filteredAndSortedStations = useMemo(() => {
+        const FUEL_TYPE_TO_PRICE_KEY_MAP = {
+            'Petrol': 'latest_pms_price',
+            'Diesel': 'latest_ago_price',
+            'Gas': 'latest_lpg_price',
+            'Kerosine': 'latest_dpk_price',
+        };
+
         let processedData = [...allStations];
+
         const minPrice = parseFloat(filters.priceRange.min);
         const maxPrice = parseFloat(filters.priceRange.max);
         const isPriceRangeActive = !isNaN(minPrice) || !isNaN(maxPrice);
 
         processedData = processedData.filter(station => {
-            if (filters.requiredProducts.length > 0) {
-                const stationProducts = new Set(station.products || []);
-                const hasAllProducts = filters.requiredProducts.every(required => stationProducts.has(required));
-                if (!hasAllProducts) return false;
+            if (filters.fuelType) {
+                const hasFuel = (station.products || []).includes(filters.fuelType);
+                if (!hasFuel) {
+                    return false;
+                }
+            }
+            
+            if (isPriceRangeActive && filters.fuelType) {
+                const priceKey = FUEL_TYPE_TO_PRICE_KEY_MAP[filters.fuelType] as keyof DbStation;
+                if (!priceKey) return true; 
+
+                const price = station[priceKey] as number | null;
+                if (price == null) return false;
+
+                const isAboveMin = isNaN(minPrice) || price >= minPrice;
+                const isBelowMax = isNaN(maxPrice) || price <= maxPrice;
+
+                if (!(isAboveMin && isBelowMax)) {
+                    return false;
+                }
             }
 
             if (filters.rating > 0 && (station.average_rating || 0) < filters.rating) {
                 return false;
             }
-
             if (filters.amenities.length > 0) {
                 const stationAmenities = new Set(station.amenities || []);
                 const hasAllAmenities = filters.amenities.every(required => stationAmenities.has(required));
                 if (!hasAllAmenities) return false;
             }
-
-            if (filters.fuelType && isPriceRangeActive) {
-                const priceKey = `latest_${filters.fuelType.toLowerCase()}_price` as keyof DbStation;
-                const price = station[priceKey] as number | null;
-                if (price === null) return false;
-                const isAboveMin = isNaN(minPrice) || price >= minPrice;
-                const isBelowMax = isNaN(maxPrice) || price <= maxPrice;
-                if (!(isAboveMin && isBelowMax)) return false;
-            } else if (filters.fuelType) {
-                 const fuelKey = `latest_${filters.fuelType.toLowerCase()}_price` as keyof DbStation;
-                 if (station[fuelKey] == null) return false;
-            }
-
+            
             return true;
         });
 
-        if (isPriceRangeActive) {
-            const fuelKey = `latest_${(filters.fuelType || 'PMS').toLowerCase()}_price` as keyof DbStation;
+        if (isPriceRangeActive && filters.fuelType && FUEL_TYPE_TO_PRICE_KEY_MAP[filters.fuelType]) {
+            const fuelKey = FUEL_TYPE_TO_PRICE_KEY_MAP[filters.fuelType] as keyof DbStation;
             processedData.sort((a, b) => (a[fuelKey] as number || 99999) - (b[fuelKey] as number || 99999));
         } else if (filters.sortBy === 'last_update') {
             processedData.sort((a, b) => new Date(b.last_updated_at || 0).getTime() - new Date(a.last_updated_at || 0).getTime());
@@ -279,7 +286,6 @@ export default function SearchScreen() {
 
     return (
         <View style={styles.container}>
-            {/* MODIFIED: Header completely restyled and restructured */}
             <View style={styles.header}>
                 <View style={styles.searchRow}>
                     <View style={styles.searchBarContainer}>
@@ -291,7 +297,8 @@ export default function SearchScreen() {
                             </Pressable>
                         )}
                     </View>
-                    <Pressable style={styles.mapButton} onPress={() => router.push('/map')}>
+                    {/* --- MODIFIED: Changed navigation from '/map' to '/home' --- */}
+                    <Pressable style={styles.mapButton} onPress={() => router.push('/home')}>
                         <Text style={styles.mapButtonText}>Map</Text>
                     </Pressable>
                 </View>
@@ -317,7 +324,23 @@ export default function SearchScreen() {
                 visible={brandsModalVisible}
                 onRequestClose={() => { setBrandsModalVisible(!brandsModalVisible); }}
             >
-             {/* ... (Modal is unchanged) ... */}
+             <Pressable style={styles.modalOverlay} onPress={() => setBrandsModalVisible(false)}>
+                <Pressable style={styles.modalContent} onPress={() => {}}>
+                    <Text style={styles.modalTitle}>Popular Brands</Text>
+                    {[...Array(Math.ceil(POPULAR_BRANDS.length / 3))].map((_, rowIndex) => (
+                        <View key={rowIndex} style={styles.brandRow}>
+                            {POPULAR_BRANDS.slice(rowIndex * 3, rowIndex * 3 + 3).map((brand) => (
+                                <Pressable key={brand} style={styles.brandItem} onPress={() => handleBrandSelect(brand)}>
+                                    <View style={styles.brandIconContainer}>
+                                        <MaterialCommunityIcons name="gas-station" size={24} color={colors.primary} />
+                                    </View>
+                                    <Text style={styles.brandItemText}>{brand}</Text>
+                                </Pressable>
+                            ))}
+                        </View>
+                    ))}
+                </Pressable>
+             </Pressable>
             </Modal>
 
             {isLoading ? (<View style={styles.centered}><ActivityIndicator size="large" color={colors.primary} /></View>)
@@ -329,7 +352,7 @@ export default function SearchScreen() {
                     renderItem={({ item }) => (
                         <StationCard
                             station={item}
-                            onPress={() => {}}
+                            onPress={() => router.push({ pathname: `/station/${item.id}`, params: { name: item.name }})}
                             isFavourite={favouriteIds.has(item.id)}
                             onToggleFavourite={() => handleToggleFavourite(item)}
                         />
@@ -343,15 +366,13 @@ export default function SearchScreen() {
     );
 }
 
-// MODIFIED: Styles updated to use the custom color scheme for the header
+// Styles (Unchanged)
 const getThemedStyles = (colors: ThemeColors, customColors: any) => StyleSheet.create({
     container: { flex: 1, backgroundColor: colors.background },
-    
-    // --- New Header Styles ---
     header: { 
         backgroundColor: colors.background, 
         paddingHorizontal: 16, 
-        paddingTop: 40, // Adjust for status bar
+        paddingTop: 40,
         paddingBottom: 15, 
         borderBottomWidth: 1, 
         borderBottomColor: colors.cardBorder, 
@@ -422,8 +443,6 @@ const getThemedStyles = (colors: ThemeColors, customColors: any) => StyleSheet.c
         color: customColors.text,
         fontWeight: '500',
     },
-
-    // --- Original Styles (mostly unchanged) ---
     centered: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: colors.background, },
     emptyText: { textAlign: 'center', marginTop: 50, color: colors.textSecondary, fontSize: 16 },
     priceSummaryContainer: { flexDirection: 'row', paddingHorizontal: 16, paddingVertical: 10, alignItems: 'center', },
@@ -436,12 +455,10 @@ const getThemedStyles = (colors: ThemeColors, customColors: any) => StyleSheet.c
     distanceHeaderContainer: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 16, paddingVertical: 8, backgroundColor: colors.cardBackground, },
     distanceHeaderTextLeft: { fontSize: 16, fontWeight: 'bold', color: colors.text, },
     distanceHeaderTextRight: { fontSize: 14, fontWeight: 'bold', color: colors.primary, },
-    
-    // ... Modal styles are unchanged ...
     modalOverlay: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: 'rgba(0, 0, 0, 0.5)', },
     modalContent: { width: '90%', maxWidth: 400, backgroundColor: colors.cardBackground, borderRadius: 12, padding: 20, shadowColor: "#000", shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.25, shadowRadius: 4, elevation: 5, },
     modalTitle: { fontSize: 18, fontWeight: 'bold', color: colors.text, marginBottom: 15, textAlign: 'center', },
-    brandRow: { justifyContent: 'space-around', },
+    brandRow: { justifyContent: 'space-around', flexDirection: 'row', },
     brandItem: { alignItems: 'center', paddingVertical: 10, width: '33%', gap: 8, },
     brandIconContainer: { width: 50, height: 50, borderRadius: 25, backgroundColor: colors.background, justifyContent: 'center', alignItems: 'center', borderWidth: 1, borderColor: colors.cardBorder, },
     brandItemText: { color: colors.textSecondary, fontSize: 12, fontWeight: '500', textAlign: 'center', },

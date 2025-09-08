@@ -1,5 +1,4 @@
-// File: app/(tabs)/_layout.tsx
-// NO CHANGES NEEDED - This file is correctly configured.
+// app/(tabs)/_layout.tsx
 
 import { Tabs } from 'expo-router';
 import React from 'react';
@@ -21,6 +20,23 @@ export default function TabLayout() {
       <Tabs.Screen name="search" />
       <Tabs.Screen name="rewards" />
       <Tabs.Screen name="settings" />
+
+      {/* This screen is for the station detail page */}
+      <Tabs.Screen 
+        name="station/[id]" 
+        options={{ href: null }} 
+      />
+
+      {/* --- THIS IS THE CORRECTED CODE --- */}
+      {/* Remove the ../ because the files are now direct children */}
+      <Tabs.Screen 
+        name="report/submit" 
+        options={{ href: null }} 
+      />
+      <Tabs.Screen 
+        name="report/reportchat" 
+        options={{ href: null }} 
+      />
     </Tabs>
   );
 }

@@ -8,13 +8,13 @@ import { useIsFocused } from '@react-navigation/native';
 import MapView, { Marker } from 'react-native-maps';
 import MapViewDirections from 'react-native-maps-directions';
 import * as Location from 'expo-location';
-import { supabase } from '../../lib/supabase';
+import { supabase } from '../../../lib/supabase';
 import { FontAwesome, MaterialCommunityIcons } from '@expo/vector-icons';
-import { useAuth } from '../../context/AuthContext';
+import { useAuth } from '../../../context/AuthContext';
 import Constants from 'expo-constants';
-import { useTheme } from '../../context/ThemeContext';
-import { Colors } from '../../constants/Colors';
-import { mapStyle } from '../../constants/MapStyle';
+import { useTheme } from '../../../context/ThemeContext';
+import { Colors } from '../../../constants/Colors';
+import { mapStyle } from '../../../constants/MapStyle';
 
 const GOOGLE_MAPS_API_KEY = Constants.expoConfig?.web?.config?.googleMaps?.apiKey;
 

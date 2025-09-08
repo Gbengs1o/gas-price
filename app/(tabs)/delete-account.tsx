@@ -8,10 +8,10 @@ import {
     ActivityIndicator,
     SafeAreaView,
 } from 'react-native';
-import { useTheme } from '../context/ThemeContext';
-import { Colors } from '../constants/Colors';
-import { supabase } from '../lib/supabase';
-import { useAuth } from '../context/AuthContext'; // To handle sign out after deletion
+import { useTheme } from '../../context/ThemeContext';
+import { Colors } from '../../constants/Colors';
+import { supabase } from '../../lib/supabase';
+import { useAuth } from '../../context/AuthContext'; // To handle sign out after deletion
 
 // A simple fallback if you don't use a theme context in this file
 const FallbackTheme = {

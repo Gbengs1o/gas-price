@@ -9,8 +9,8 @@ import {
     Alert,
     Linking,
 } from 'react-native';
-import { useTheme } from '../context/ThemeContext'; // Assuming you have a theme context
-import { Colors } from '../constants/Colors'; // Assuming you have a Colors constant
+import { useTheme } from '../../context/ThemeContext'; // Assuming you have a theme context
+import { Colors } from '../../constants/Colors'; // Assuming you have a Colors constant
 import { Ionicons } from '@expo/vector-icons';
 
 // A simple fallback if you don't use a theme context in this file

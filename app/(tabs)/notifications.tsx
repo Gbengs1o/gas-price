@@ -4,10 +4,10 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { View, Text, FlatList, StyleSheet, ActivityIndicator, Alert, RefreshControl } from 'react-native';
 import { useIsFocused } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
-import { useAuth } from '../context/AuthContext';
-import { useTheme } from '../context/ThemeContext';
-import { supabase } from '../lib/supabase';
-import { Colors } from '../constants/Colors';
+import { useAuth } from '../../context/AuthContext';
+import { useTheme } from '../../context/ThemeContext';
+import { supabase } from '../../lib/supabase';
+import { Colors } from '../../constants/Colors';
 
 interface Notification {
   id: number;

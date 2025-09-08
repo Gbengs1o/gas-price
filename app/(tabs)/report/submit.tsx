@@ -1,22 +1,28 @@
-// File: app/report/submit.tsx
-// FINAL VERSION 5.0: Implements the new, separated, and icon-based design for Amenities and Payment Methods.
+// File: app/(tabs)/report/submit.tsx
+// All ../../ paths are now ../../../
 
-import React, { useState, useMemo } from 'react';
-import {
-    StyleSheet, View, Text, Pressable, Alert, TextInput,
-    ActivityIndicator, KeyboardAvoidingView, Platform, ScrollView
-} from 'react-native';
-import { useLocalSearchParams, useRouter, Stack } from 'expo-router';
 import { FontAwesome, MaterialCommunityIcons } from '@expo/vector-icons';
-import { supabase } from '../../lib/supabase';
-import { useAuth } from '../../context/AuthContext';
 import * as Location from 'expo-location';
-import { useTheme } from '../../context/ThemeContext';
-import { Colors } from '../../constants/Colors';
+import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
+import React, { useMemo, useState } from 'react';
+import {
+    ActivityIndicator,
+    Alert,
+    KeyboardAvoidingView, Platform,
+    Pressable,
+    ScrollView,
+    StyleSheet,
+    Text,
+    TextInput,
+    View
+} from 'react-native';
+import { Colors } from '../../../constants/Colors';
+import { useAuth } from '../../../context/AuthContext';
+import { useTheme } from '../../../context/ThemeContext';
+import { supabase } from '../../../lib/supabase';
 
-// --- TYPE DEFINITION & CONSTANTS (UPDATED FOR NEW DESIGN) ---
+// --- TYPE DEFINITION & CONSTANTS ---
 type ThemeColors = typeof Colors.light | typeof Colors.dark;
-// Updated list to match the new design image
 const AMENITIES = [
     "Supermarket", "Restaurant", "Membership required",
     "Car wash", "ATM", "Cash discount",
@@ -27,7 +33,6 @@ const AMENITIES = [
 const PAYMENT_METHODS = ["Cash", "Transfer", "POS"];
 const ALL_PRODUCTS = ["Petrol", "Diesel", "Kerosine", "Gas"];
 
-// Icon mapping for the new amenity grid
 const amenityIcons: { [key: string]: React.ComponentProps<typeof FontAwesome>['name'] | React.ComponentProps<typeof MaterialCommunityIcons>['name'] } = {
     "Supermarket": 'shopping-cart',
     "Restaurant": 'cutlery',
@@ -45,8 +50,6 @@ const amenityIcons: { [key: string]: React.ComponentProps<typeof FontAwesome>['n
     "Power": 'bolt',
 };
 
-
-// --- HELPER FUNCTION (remains the same) ---
 function haversineDistance(lat1: number, lon1: number, lat2: number, lon2: number): number { const R = 6371e3; const p1 = lat1 * Math.PI/180; const p2 = lat2 * Math.PI/180; const dp = (lat2-lat1) * Math.PI/180; const dl = (lon2-lon1) * Math.PI/180; const a = Math.sin(dp/2) * Math.sin(dp/2) + Math.cos(p1) * Math.cos(p2) * Math.sin(dl/2) * Math.sin(dl/2); const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)); return R * c; }
 
 export default function SubmitReportScreen() {
@@ -57,14 +60,12 @@ export default function SubmitReportScreen() {
     const colors = Colors[theme];
     const styles = useMemo(() => getThemedStyles(colors), [colors]);
 
-    // --- STATE MANAGEMENT ---
     const [prices, setPrices] = useState<{ [key: string]: string }>({});
     const [selectedAmenities, setSelectedAmenities] = useState<Set<string>>(new Set());
     const [selectedPaymentMethods, setSelectedPaymentMethods] = useState<Set<string>>(new Set());
     const [loading, setLoading] = useState(false);
     const [focusedInput, setFocusedInput] = useState<string | null>(null);
 
-    // --- HANDLERS ---
     const handleSelect = (item: string, isAmenity: boolean) => {
         const set = isAmenity ? selectedAmenities : selectedPaymentMethods;
         const setter = isAmenity ? setSelectedAmenities : setSelectedPaymentMethods;
@@ -78,7 +79,6 @@ export default function SubmitReportScreen() {
     };
 
     const handleSubmit = async () => {
-        // ... (handleSubmit logic remains exactly the same)
         if (!user || !stationId) { Alert.alert("Error", "User or Station ID is missing."); return; }
         const hasPrice = Object.values(prices).some(price => price && parseFloat(price) > 0);
         const hasAmenity = selectedAmenities.size > 0;
@@ -147,7 +147,6 @@ export default function SubmitReportScreen() {
                     <Text style={styles.stationName}>{stationName}</Text>
                 </View>
 
-                {/* --- FUEL PRICE CARD (Unchanged) --- */}
                 <View style={styles.priceCardContainer}>
                     <View style={styles.priceCardHeader}><Text style={styles.priceCardTitle}>Update Station Price</Text></View>
                     {ALL_PRODUCTS.map((product, index) => {
@@ -166,9 +165,7 @@ export default function SubmitReportScreen() {
                     })}
                 </View>
 
-                {/* --- NEW AMENITIES & PAYMENTS CARD --- */}
                 <View style={styles.cardContainer}>
-                    {/* Payment Method Section */}
                     <View style={styles.section}>
                         <Text style={styles.sectionTitle}>Payment Method</Text>
                         <View style={styles.paymentMethodContainer}>
@@ -183,15 +180,12 @@ export default function SubmitReportScreen() {
                         </View>
                     </View>
                     <View style={styles.divider} />
-                    {/* Amenities Section */}
                     <View style={styles.section}>
                          <Text style={styles.sectionTitle}>Amenities</Text>
                          <View style={styles.amenityGridContainer}>
                             {AMENITIES.map((item) => {
                                 const isSelected = selectedAmenities.has(item);
                                 const iconName = amenityIcons[item] || 'question-circle';
-                                const IconComponent = typeof iconName === 'string' && iconName.includes(' ') ? MaterialCommunityIcons : FontAwesome;
-
                                 return(
                                     <Pressable key={item} style={styles.amenityItem} onPress={() => handleSelect(item, true)}>
                                         <View style={[styles.amenityIconContainer, isSelected && styles.amenityIconContainerSelected]}>
@@ -214,9 +208,8 @@ export default function SubmitReportScreen() {
 }
 
 const getThemedStyles = (colors: ThemeColors) => StyleSheet.create({
-    // ... (container, header, price card styles remain the same)
     container: { flex: 1, backgroundColor: colors.background },
-    scrollContainer: { padding: 20, paddingBottom: 50 },
+    scrollContainer: { padding: 20, paddingBottom: 120 },
     header: { alignItems: 'center', marginBottom: 20, },
     title: { fontSize: 16, color: colors.textSecondary, textAlign: 'center', },
     stationName: { fontSize: 22, fontWeight: 'bold', textAlign: 'center', color: colors.text, marginTop: 4, },
@@ -231,86 +224,20 @@ const getThemedStyles = (colors: ThemeColors) => StyleSheet.create({
     currencySymbol: { fontSize: 16, fontWeight: '600', color: colors.text, marginRight: 4, },
     priceInput: { flex: 1, fontSize: 16, fontWeight: '600', color: colors.text, paddingVertical: 5, },
     unitLabel: { fontSize: 14, color: colors.textSecondary, marginLeft: 2, },
-    
-    // --- New/Updated Amenity Card Styles ---
-    cardContainer: {
-        backgroundColor: colors.cardBackground,
-        borderRadius: 12,
-        padding: 20,
-        marginBottom: 20,
-        borderWidth: 1,
-        borderColor: colors.cardBorder,
-    },
-    section: {
-        marginBottom: 10,
-    },
-    sectionTitle: {
-        fontSize: 16,
-        fontWeight: '500',
-        color: colors.textSecondary,
-        marginBottom: 15,
-    },
-    divider: {
-        height: 1,
-        backgroundColor: colors.cardBorder,
-        marginVertical: 15,
-    },
-    paymentMethodContainer: {
-        flexDirection: 'row',
-        flexWrap: 'wrap',
-        gap: 12,
-    },
-    paymentChip: {
-        backgroundColor: 'transparent',
-        borderColor: '#FADDAA', // Light gold outline
-        borderWidth: 1.5,
-        borderRadius: 8,
-        paddingVertical: 10,
-        paddingHorizontal: 20,
-    },
-    paymentChipSelected: {
-        backgroundColor: '#edae11',
-        borderColor: '#edae11',
-    },
-    paymentChipText: {
-        color: colors.text,
-        fontWeight: '500'
-    },
-    paymentChipTextSelected: {
-        color: '#FFFFFF',
-    },
-    amenityGridContainer: {
-        flexDirection: 'row',
-        flexWrap: 'wrap',
-        justifyContent: 'flex-start',
-    },
-    amenityItem: {
-        width: '33.33%',
-        alignItems: 'center',
-        marginBottom: 20,
-    },
-    amenityIconContainer: {
-        width: 60,
-        height: 60,
-        borderRadius: 30,
-        backgroundColor: colors.background,
-        justifyContent: 'center',
-        alignItems: 'center',
-        marginBottom: 8,
-        borderWidth: 1,
-        borderColor: colors.cardBorder,
-    },
-    amenityIconContainerSelected: {
-        backgroundColor: '#edae11',
-        borderColor: '#edae11',
-    },
-    amenityText: {
-        fontSize: 12,
-        color: colors.text,
-        textAlign: 'center',
-    },
-
-    // --- Submit Button Styles ---
+    cardContainer: { backgroundColor: colors.cardBackground, borderRadius: 12, padding: 20, marginBottom: 20, borderWidth: 1, borderColor: colors.cardBorder, },
+    section: { marginBottom: 10, },
+    sectionTitle: { fontSize: 16, fontWeight: '500', color: colors.textSecondary, marginBottom: 15, },
+    divider: { height: 1, backgroundColor: colors.cardBorder, marginVertical: 15, },
+    paymentMethodContainer: { flexDirection: 'row', flexWrap: 'wrap', gap: 12, },
+    paymentChip: { backgroundColor: 'transparent', borderColor: '#FADDAA', borderWidth: 1.5, borderRadius: 8, paddingVertical: 10, paddingHorizontal: 20, },
+    paymentChipSelected: { backgroundColor: '#edae11', borderColor: '#edae11', },
+    paymentChipText: { color: colors.text, fontWeight: '500' },
+    paymentChipTextSelected: { color: '#FFFFFF', },
+    amenityGridContainer: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'flex-start', },
+    amenityItem: { width: '33.33%', alignItems: 'center', marginBottom: 20, },
+    amenityIconContainer: { width: 60, height: 60, borderRadius: 30, backgroundColor: colors.background, justifyContent: 'center', alignItems: 'center', marginBottom: 8, borderWidth: 1, borderColor: colors.cardBorder, },
+    amenityIconContainerSelected: { backgroundColor: '#edae11', borderColor: '#edae11', },
+    amenityText: { fontSize: 12, color: colors.text, textAlign: 'center', },
     submitButton: { backgroundColor: '#edae11', paddingVertical: 15, borderRadius: 8, alignItems: 'center', justifyContent: 'center', marginTop: 10, minHeight: 53, },
     submitButtonText: { color: '#FFFFFF', fontSize: 16, fontWeight: 'bold', },
     buttonDisabled: { opacity: 0.7 },

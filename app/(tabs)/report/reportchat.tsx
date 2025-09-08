@@ -1,5 +1,5 @@
-// File: app/report/reportchat.tsx
-// FINAL VERSION 4.0: Faithfully reproduces the UI from the provided image, including all rating components.
+// File: app/(tabs)/report/reportchat.tsx
+// All ../../ paths are now ../../../
 
 import React, { useState, useMemo } from 'react';
 import {
@@ -8,22 +8,21 @@ import {
 } from 'react-native';
 import { useLocalSearchParams, useRouter, Stack } from 'expo-router';
 import { FontAwesome } from '@expo/vector-icons';
-import { supabase } from '../../lib/supabase';
-import { useAuth } from '../../context/AuthContext';
+import { supabase } from '../../../lib/supabase';
+import { useAuth } from '../../../context/AuthContext';
 import * as Location from 'expo-location';
-import { useTheme } from '../../context/ThemeContext';
-import { Colors } from '../../constants/Colors';
+import { useTheme } from '../../../context/ThemeContext';
+import { Colors } from '../../../constants/Colors';
 
 // --- TYPE DEFINITIONS & CONSTANTS ---
 type ThemeColors = typeof Colors.light | typeof Colors.dark;
 const MOOD_RATINGS = ['Very bad', 'Bad', 'Good', 'Better', 'Excellent'];
 const EMOJI_RATINGS = ['😖', '😕', '😐', '😊', '😍'];
 
-// --- HELPER FUNCTION (remains the same) ---
+// --- HELPER FUNCTION ---
 function haversineDistance(lat1: number, lon1: number, lat2: number, lon2: number): number { const R = 6371e3; const p1 = lat1 * Math.PI/180; const p2 = lat2 * Math.PI/180; const dp = (lat2-lat1) * Math.PI/180; const dl = (lon2-lon1) * Math.PI/180; const a = Math.sin(dp/2) * Math.sin(dp/2) + Math.cos(p1) * Math.cos(p2) * Math.sin(dl/2) * Math.sin(dl/2); const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)); return R * c; }
 
 // --- UI SUB-COMPONENT ---
-// This component displays the stars at the top and is controlled by the main state
 const StarRatingDisplay = ({ rating, colors }: { rating: number, colors: ThemeColors }) => {
     const styles = useMemo(() => getThemedStyles(colors), [colors]);
     return (
@@ -162,7 +161,6 @@ export default function SubmitCommentScreen() {
     );
 }
 
-// --- THEMED STYLESHEET (ALIGNED WITH PROVIDED IMAGE) ---
 const getThemedStyles = (colors: ThemeColors) => StyleSheet.create({
     container: {
         flex: 1,
@@ -171,10 +169,10 @@ const getThemedStyles = (colors: ThemeColors) => StyleSheet.create({
     scrollContainer: {
         flexGrow: 1,
         padding: 20,
+        paddingBottom: 120,
     },
-    // --- Star Rating Display (Top) ---
     starRatingDisplayContainer: {
-        backgroundColor: '#F7F8FA', // Light grey background from image
+        backgroundColor: '#F7F8FA', 
         borderRadius: 6,
         paddingVertical: 10,
         paddingHorizontal: 15,
@@ -192,12 +190,11 @@ const getThemedStyles = (colors: ThemeColors) => StyleSheet.create({
         fontWeight: '600',
         color: colors.textSecondary,
     },
-    // --- Comment Box ---
     commentInputWrapper: {
         backgroundColor: colors.cardBackground,
         borderRadius: 7,
         borderWidth: 1.5,
-        borderColor: '#edae11', // Gold border from image
+        borderColor: '#edae11',
         minHeight: 120,
         padding: 5,
         marginBottom: 20,
@@ -209,7 +206,6 @@ const getThemedStyles = (colors: ThemeColors) => StyleSheet.create({
         color: colors.text,
         textAlignVertical: 'top',
     },
-    // --- "Overall Experience" Card ---
     cardContainer: {
         backgroundColor: colors.cardBackground,
         borderRadius: 8,
@@ -252,7 +248,6 @@ const getThemedStyles = (colors: ThemeColors) => StyleSheet.create({
     moodButtonTextSelected: {
         color: '#FFFFFF',
     },
-    // --- "Emoji Experience" Section ---
     emojiSectionContainer: {
         alignItems: 'center',
         paddingVertical: 20,
@@ -280,17 +275,16 @@ const getThemedStyles = (colors: ThemeColors) => StyleSheet.create({
     },
     emojiSelected: {
         opacity: 1,
-        transform: [{ scale: 1.1 }], // Make selected emoji slightly bigger
+        transform: [{ scale: 1.1 }],
     },
-    // --- Submit Button ---
     submitButton: {
-        backgroundColor: '#edae11', // Gold color from image
+        backgroundColor: '#edae11',
         paddingVertical: 15,
         borderRadius: 8,
         alignItems: 'center',
         justifyContent: 'center',
         minHeight: 53,
-        marginTop: 'auto', // Pushes button to the bottom
+        marginTop: 'auto',
     },
     submitButtonText: {
         color: '#FFFFFF',

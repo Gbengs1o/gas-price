@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet, ScrollView } from 'react-native';
-import { useTheme } from '../context/ThemeContext'; // Assuming you have a theme context
-import { Colors } from '../constants/Colors'; // Assuming you have a Colors constant
+import { useTheme } from '../../context/ThemeContext'; // Assuming you have a theme context
+import { Colors } from '../../constants/Colors'; // Assuming you have a Colors constant
 
 // A simple fallback if you don't use a theme context in this file
 const FallbackTheme = {

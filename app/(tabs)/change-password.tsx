@@ -15,7 +15,7 @@ import {
 // import { useTheme } from '../context/ThemeContext';
 // import { Colors } from '../constants/Colors';
 import { Ionicons } from '@expo/vector-icons';
-import { supabase } from '../lib/supabase';
+import { supabase } from '../../lib/supabase';
 
 // --- FIX: Defined a static light theme object to enforce light mode ---
 const lightColors = {

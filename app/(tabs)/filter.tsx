@@ -1,14 +1,14 @@
 import React from 'react';
 import { StyleSheet, View, Text, Pressable, TextInput, ScrollView } from 'react-native';
 import { useRouter } from 'expo-router';
-import { useFilterStore, AMENITIES, PAYMENT_METHODS, ALL_PRODUCTS } from '../stores/useFilterStore';
-import { useTheme } from '../context/ThemeContext';
-import { Colors } from '../constants/Colors';
+import { useBottomTabBarHeight } from '@react-navigation/bottom-tabs'; 
+import { useFilterStore, AMENITIES, PAYMENT_METHODS, ALL_PRODUCTS } from '../../stores/useFilterStore';
+import { useTheme } from '../../context/ThemeContext';
+import { Colors } from '../../constants/Colors';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { FontAwesome, MaterialIcons, MaterialCommunityIcons } from '@expo/vector-icons';
 
-type ThemeColors = typeof Colors.light | typeof Colors.dark;
-
+// --- (No changes to amenityIcons or RatingBlock) ---
 const amenityIcons: { [key: string]: React.ReactElement } = {
     'Supermarket': <FontAwesome name="shopping-cart" size={32} />,
     'Restaurant': <FontAwesome name="cutlery" size={32} />,
@@ -47,8 +47,11 @@ const RatingBlock = ({ ratingValue, selectedRating, onSelect, colors }) => {
     );
 };
 
+
 export default function FilterScreen() {
     const { theme } = useTheme();
+    const tabBarHeight = useBottomTabBarHeight();
+
     const extendedColors = {
         ...Colors[theme],
         chipBackground: '#FFFAE6',
@@ -59,12 +62,13 @@ export default function FilterScreen() {
         starColorEmpty: '#DDDDDD',
         ratingText: '#333333',
     };
+    
     const styles = getThemedStyles(extendedColors);
     const router = useRouter();
 
     const { filters, setFilters, resetFilters } = useFilterStore();
     
-    // --- HANDLERS RE-ADDED AND UPDATED ---
+    // --- (No changes to handler functions) ---
     const handlePriceChange = (field: 'min' | 'max', value: string) => {
         setFilters({ priceRange: { ...filters.priceRange, [field]: value } });
     };
@@ -88,8 +92,11 @@ export default function FilterScreen() {
     };
 
     return (
-        <SafeAreaView style={styles.container} edges={['bottom']}>
-            <ScrollView contentContainerStyle={styles.scrollContent} keyboardShouldPersistTaps="handled">
+        <SafeAreaView style={styles.container} edges={['top', 'left', 'right']}>
+            <ScrollView 
+                contentContainerStyle={[styles.scrollContent, { paddingBottom: tabBarHeight + 20 }]} 
+                keyboardShouldPersistTaps="handled"
+            >
                 <View style={styles.header}>
                     <Text style={styles.title}>Filters</Text>
                     <Pressable onPress={() => resetFilters()}>
@@ -97,6 +104,7 @@ export default function FilterScreen() {
                     </Pressable>
                 </View>
 
+                {/* --- (No changes to the filter options JSX) --- */}
                 <Text style={styles.label}>Sort By</Text>
                 <View style={styles.chipContainer}>
                     {(['distance', 'last_update'] as const).map(sort => (
@@ -106,7 +114,6 @@ export default function FilterScreen() {
                     ))}
                 </View>
 
-                {/* --- PRICE RANGE RE-ADDED --- */}
                 <Text style={styles.label}>Price Range</Text>
                 <View style={styles.chipContainer}>
                     {ALL_PRODUCTS.map((fuel) => (
@@ -136,7 +143,6 @@ export default function FilterScreen() {
                     ))}
                 </View>
                 
-                {/* --- UPDATED: Scrollable Ratings --- */}
                 <Text style={styles.label}>Ratings</Text>
                 <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.ratingContainer}>
                     {[1, 2, 3, 4, 5].map((rating) => (
@@ -168,52 +174,162 @@ export default function FilterScreen() {
                         )
                     })}
                 </View>
-            </ScrollView>
+                {/* --- End of filter options --- */}
 
-            <View style={styles.footer}>
-                 <Pressable style={styles.applyButton} onPress={() => router.back()}>
-                    <Text style={styles.applyButtonText}>Apply Filters</Text>
-                </Pressable>
-            </View>
+                <View style={styles.buttonContainer}>
+                    {/* THIS IS THE FIX */}
+                    <Pressable style={styles.applyButton} onPress={() => router.push('/search')}>
+                        <Text style={styles.applyButtonText}>Apply Filters</Text>
+                    </Pressable>
+                </View>
+            </ScrollView>
         </SafeAreaView>
     );
 }
 
+// --- (No changes to the styles) ---
 const getThemedStyles = (colors: any) => StyleSheet.create({
-    container: { flex: 1, backgroundColor: colors.background, },
-    scrollContent: { paddingHorizontal: 20, paddingBottom: 100 },
-    footer: { padding: 20, borderTopWidth: 1, borderTopColor: colors.cardBorder, backgroundColor: colors.cardBackground, position: 'absolute', bottom: 0, left: 0, right: 0 },
-    header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10, paddingTop: 10, },
-    title: { fontSize: 28, fontWeight: 'bold', color: colors.text, },
-    resetText: { color: colors.primary, fontSize: 16, fontWeight: '600' },
-    label: { fontSize: 14, fontWeight: '500', color: colors.text, marginTop: 25, marginBottom: 12 },
-    applyButton: { backgroundColor: colors.chipBorder, padding: 15, borderRadius: 8, alignItems: 'center' },
-    applyButtonText: { color: colors.chipTextSelected, fontSize: 16, fontWeight: 'bold' },
-    chipContainer: { flexDirection: 'row', flexWrap: 'wrap', gap: 12 },
-    chip: { paddingVertical: 8, paddingHorizontal: 16, borderRadius: 8, backgroundColor: colors.chipBackground, borderWidth: 1, borderColor: colors.chipBorder, },
-    chipSelected: { backgroundColor: colors.chipBorder, },
-    chipText: { color: colors.chipText, fontWeight: '500', fontSize: 15, textTransform: 'capitalize', },
-    chipTextSelected: { color: colors.chipTextSelected, },
-
-    // --- PRICE RANGE STYLES ---
-    priceRangeContainer: { flexDirection: 'row', alignItems: 'center', marginTop: 15, gap: 10 },
-    priceInput: { flex: 1, borderWidth: 1, borderColor: colors.cardBorder, borderRadius: 8, padding: 12, textAlign: 'center', color: colors.text, backgroundColor: colors.background, fontSize: 16 },
-    priceSeparator: { color: colors.text, fontSize: 20, fontWeight: 'bold' },
-    
-    // --- SCROLLABLE RATING STYLES ---
+    container: { 
+        flex: 1, 
+        backgroundColor: colors.background, 
+    },
+    scrollContent: { 
+        paddingHorizontal: 20, 
+    },
+    buttonContainer: {
+        marginTop: 40,
+    },
+    header: { 
+        flexDirection: 'row', 
+        justifyContent: 'space-between', 
+        alignItems: 'center', 
+        marginBottom: 10, 
+        paddingTop: 10, 
+    },
+    title: { 
+        fontSize: 28, 
+        fontWeight: 'bold', 
+        color: colors.text, 
+    },
+    resetText: { 
+        color: colors.primary, 
+        fontSize: 16, 
+        fontWeight: '600' 
+    },
+    label: { 
+        fontSize: 14, 
+        fontWeight: '500', 
+        color: colors.text, 
+        marginTop: 25, 
+        marginBottom: 12 
+    },
+    applyButton: { 
+        backgroundColor: colors.chipBorder, 
+        padding: 15, 
+        borderRadius: 8, 
+        alignItems: 'center' 
+    },
+    applyButtonText: { 
+        color: colors.chipTextSelected, 
+        fontSize: 16, 
+        fontWeight: 'bold' 
+    },
+    chipContainer: { 
+        flexDirection: 'row', 
+        flexWrap: 'wrap', 
+        gap: 12 
+    },
+    chip: { 
+        paddingVertical: 8, 
+        paddingHorizontal: 16, 
+        borderRadius: 8, 
+        backgroundColor: colors.chipBackground, 
+        borderWidth: 1, 
+        borderColor: colors.chipBorder, 
+    },
+    chipSelected: { 
+        backgroundColor: colors.chipBorder, 
+    },
+    chipText: { 
+        color: colors.chipText, 
+        fontWeight: '500', 
+        fontSize: 15, 
+        textTransform: 'capitalize', 
+    },
+    chipTextSelected: { 
+        color: colors.chipTextSelected, 
+    },
+    priceRangeContainer: { 
+        flexDirection: 'row', 
+        alignItems: 'center', 
+        marginTop: 15, 
+        gap: 10 
+    },
+    priceInput: { 
+        flex: 1, 
+        borderWidth: 1, 
+        borderColor: colors.cardBorder, 
+        borderRadius: 8, 
+        padding: 12, 
+        textAlign: 'center', 
+        color: colors.text, 
+        backgroundColor: colors.background, 
+        fontSize: 16 
+    },
+    priceSeparator: { 
+        color: colors.text, 
+        fontSize: 20, 
+        fontWeight: 'bold' 
+    },
     ratingContainer: {
         flexDirection: 'row',
         gap: 15,
-        paddingBottom: 5, // For shadow/border visibility if any
+        paddingBottom: 5,
     },
-    ratingBlock: { padding: 10, borderRadius: 8, borderWidth: 1, borderColor: colors.cardBorder, alignItems: 'flex-start', gap: 8, width: 96 },
-    ratingBlockSelected: { borderColor: colors.chipBorder, backgroundColor: colors.chipBackground },
-    ratingLabel: { fontSize: 24, fontWeight: 'bold', color: colors.ratingText, },
-    starRow: { flexDirection: 'row', gap: 4, },
-
-    // --- AMENITY STYLES ---
-    amenityGridContainer: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'flex-start', rowGap: 15, columnGap: 10, marginTop: 10, },
-    amenityItem: { alignItems: 'center', width: '30%', gap: 8, },
-    amenityText: { color: colors.textSecondary, textAlign: 'center', fontSize: 12, fontWeight: '500', height: 30, },
-    amenityTextSelected: { color: colors.chipBorder, fontWeight: '700', },
+    ratingBlock: { 
+        padding: 10, 
+        borderRadius: 8, 
+        borderWidth: 1, 
+        borderColor: colors.cardBorder, 
+        alignItems: 'flex-start', 
+        gap: 8, 
+        width: 96 
+    },
+    ratingBlockSelected: { 
+        borderColor: colors.chipBorder, 
+        backgroundColor: colors.chipBackground 
+    },
+    ratingLabel: { 
+        fontSize: 24, 
+        fontWeight: 'bold', 
+        color: colors.ratingText, 
+    },
+    starRow: { 
+        flexDirection: 'row', 
+        gap: 4, 
+    },
+    amenityGridContainer: { 
+        flexDirection: 'row', 
+        flexWrap: 'wrap', 
+        justifyContent: 'flex-start', 
+        rowGap: 15, 
+        columnGap: 10, 
+        marginTop: 10, 
+    },
+    amenityItem: { 
+        alignItems: 'center', 
+        width: '30%', 
+        gap: 8, 
+    },
+    amenityText: { 
+        color: colors.textSecondary, 
+        textAlign: 'center', 
+        fontSize: 12, 
+        fontWeight: '500', 
+        height: 30, 
+    },
+    amenityTextSelected: { 
+        color: colors.chipBorder, 
+        fontWeight: '700', 
+    },
 });

@@ -54,7 +54,6 @@
           "locationAlwaysAndWhenInUsePermission": "Allow GasPrice Nigeria to use your location to find nearby stations."
         }
       ],
-      "expo-web-browser",
       "expo-secure-store",
       "@react-native-google-signin/google-signin",
       "expo-notifications"

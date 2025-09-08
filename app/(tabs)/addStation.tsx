@@ -5,10 +5,10 @@ import { StyleSheet, View, Text, Pressable, Alert, TextInput, ActivityIndicator,
 import MapView, { Region } from 'react-native-maps';
 import * as Location from 'expo-location';
 import { router, Stack } from 'expo-router';
-import { supabase } from '../lib/supabase';
+import { supabase } from '../../lib/supabase';
 import { FontAwesome } from '@expo/vector-icons';
 import Constants from 'expo-constants';
-import { useAuth } from '../context/AuthContext'; // 1. Import useAuth to get the user
+import { useAuth } from '../../context/AuthContext'; // 1. Import useAuth to get the user
 
 const GOOGLE_MAPS_API_KEY = Constants.expoConfig?.web?.config?.googleMaps?.apiKey || 'YOUR_GOOGLE_MAPS_API_KEY_FALLBACK';
 

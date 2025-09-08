@@ -4,13 +4,13 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { View, TextInput, FlatList, Text, Pressable, StyleSheet, ActivityIndicator, Alert } from 'react-native';
 import { Stack, useRouter } from 'expo-router';
 import * as Location from 'expo-location';
-import { useDebounce } from '../hooks/useDebounce';
+import { useDebounce } from '../../hooks/useDebounce';
 import { FontAwesome } from '@expo/vector-icons';
-import { useFilterStore } from '../stores/useFilterStore';
+import { useFilterStore } from '../../stores/useFilterStore';
 
 // --- THEME IMPORTS ---
-import { useTheme } from '../context/ThemeContext';
-import { Colors } from '../constants/Colors';
+import { useTheme } from '../../context/ThemeContext';
+import { Colors } from '../../constants/Colors';
 
 type LocationResult = { name: string; state: string; country: string; lat: number; lon: number; };
 type ThemeColors = typeof Colors.light | typeof Colors.dark;
