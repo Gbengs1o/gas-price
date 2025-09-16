@@ -1,9 +1,11 @@
 // File: components/LetterAvatar.tsx
 
-import React from 'react';
-import { View, Text, Image, StyleSheet } from 'react-native';
-import { useTheme } from '../context/ThemeContext';
-import { Colors } from '../constants/Colors';
+import React, { useMemo } from 'react';
+import { Image, StyleSheet, Text, View } from 'react-native';
+import { useTheme } from '../context/ThemeContext'; // REMOVED: Old 'Colors' import
+
+// Get the color type from our hook
+type AppColors = ReturnType<typeof useTheme>['colors'];
 
 interface LetterAvatarProps {
   avatarUrl: string | null | undefined;
@@ -12,41 +14,48 @@ interface LetterAvatarProps {
 }
 
 export const LetterAvatar: React.FC<LetterAvatarProps> = ({ avatarUrl, name, size = 120 }) => {
-  const { theme } = useTheme();
-  const colors = Colors[theme];
+  // CHANGED: Get the full 'colors' object directly from our theme context.
+  const { colors } = useTheme();
+  
+  // NEW: Styles are now generated dynamically based on the theme and size prop.
+  const styles = useMemo(() => getThemedStyles(colors, size), [colors, size]);
 
   const firstLetter = name ? name.charAt(0).toUpperCase() : '?';
 
-  // If a valid avatar URL is provided, display the image
   if (avatarUrl) {
-    return (
-      <Image 
-        source={{ uri: avatarUrl }} 
-        style={[styles.avatarImage, { width: size, height: size, borderRadius: size / 2, borderColor: colors.primary }]} 
-      />
-    );
+    // CLEANER: The style is now self-contained.
+    return <Image source={{ uri: avatarUrl }} style={styles.avatarImage} />;
   }
 
-  // Otherwise, display the letter avatar
+  // CLEANER: The style is now self-contained.
   return (
-    <View style={[styles.letterAvatarContainer, { width: size, height: size, borderRadius: size / 2, backgroundColor: colors.primary, borderColor: colors.primary }]}>
-      <Text style={[styles.letter, { fontSize: size / 2, color: colors.primaryText }]}>
-        {firstLetter}
-      </Text>
+    <View style={styles.letterAvatarContainer}>
+      <Text style={[styles.letter, { fontSize: size / 2 }]}>{firstLetter}</Text>
     </View>
   );
 };
 
-const styles = StyleSheet.create({
+// NEW: A separate function to generate theme-aware styles.
+const getThemedStyles = (colors: AppColors, size: number) => StyleSheet.create({
   avatarImage: {
+    width: size,
+    height: size,
+    borderRadius: size / 2,
     borderWidth: 4,
+    borderColor: colors.primary, // Now correctly uses the theme's purple color.
   },
   letterAvatarContainer: {
+    width: size,
+    height: size,
+    borderRadius: size / 2,
     justifyContent: 'center',
     alignItems: 'center',
     borderWidth: 4,
+    borderColor: colors.primary, // Now correctly uses the theme's purple color.
+    backgroundColor: colors.primary, // Background is also purple.
   },
   letter: {
     fontWeight: 'bold',
+    color: colors.primaryText, // Uses the new color we added to the theme.
   },
 });

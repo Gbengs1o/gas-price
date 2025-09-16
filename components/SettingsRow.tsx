@@ -1,8 +1,9 @@
-import React from 'react';
-import { View, Text, Pressable, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import React, { useMemo } from 'react';
+import { View, Text, Pressable, StyleSheet } from 'react-native';
 import { useTheme } from '../context/ThemeContext';
-import { Colors } from '../constants/Colors';
+
+type AppColors = ReturnType<typeof useTheme>['colors'];
 
 type SettingsRowProps = {
   label: string;
@@ -12,17 +13,13 @@ type SettingsRowProps = {
 };
 
 export const SettingsRow = ({ label, iconName, onPress, isDestructive = false }: SettingsRowProps) => {
-  const { theme } = useTheme();
-  const colors = Colors[theme];
-  const labelColor = isDestructive ? '#dc3545' : colors.text;
+  const { colors } = useTheme();
+  const styles = useMemo(() => getThemedStyles(colors), [colors]);
+  const labelColor = isDestructive ? colors.destructive : colors.text;
 
   return (
     <Pressable
-      style={({ pressed }) => [
-        styles.row,
-        { backgroundColor: colors.cardBackground, borderColor: colors.cardBorder },
-        pressed && { backgroundColor: theme === 'light' ? '#f0f0f0' : '#2c2c2c' },
-      ]}
+      style={({ pressed }) => [ styles.row, pressed && styles.rowPressed ]}
       onPress={onPress}
     >
       <Ionicons name={iconName} size={22} color={labelColor} style={styles.icon} />
@@ -32,15 +29,16 @@ export const SettingsRow = ({ label, iconName, onPress, isDestructive = false }:
   );
 };
 
-const styles = StyleSheet.create({
+const getThemedStyles = (colors: AppColors) => StyleSheet.create({
   row: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingVertical: 15,
-    paddingHorizontal: 12,
-    borderRadius: 8,
-    borderWidth: 1,
-    marginBottom: 12,
+    flexDirection: 'row', alignItems: 'center',
+    paddingVertical: 15, paddingHorizontal: 12,
+    borderRadius: 8, borderWidth: 1, marginBottom: 12,
+    backgroundColor: colors.card, // THEME-AWARE
+    borderColor: colors.border, // THEME-AWARE
+  },
+  rowPressed: {
+    backgroundColor: colors.cardPressed, // THEME-AWARE
   },
   icon: {
     marginRight: 15,

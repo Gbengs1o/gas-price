@@ -1,11 +1,12 @@
 {
   "expo": {
-    "name": "GasPrice Nigeria",
-    "slug": "gasprice-nigeria",
+    "name": "FYND FUEL",
+    "slug": "fynd-fuel",
+    "owner": "dovekings",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": "gaspricenigeria",
+    "scheme": "fyndfuel",
     "userInterfaceStyle": "automatic",
     "splash": {
       "image": "./assets/images/splash-icon.png",
@@ -14,7 +15,7 @@
     },
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.yourname.gaspricenigeria",
+      "bundleIdentifier": "com.yourname.fyndfuel",
       "config": {
         "googleMapsApiKey": "AIzaSyCHkNvB2RLbbyZT9YthpyVDxGSP4Z7qF9o"
       }
@@ -22,9 +23,9 @@
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
-        "backgroundColor": "#ffffff"
+        "backgroundColor": "#FFFFFF"
       },
-      "package": "com.yourname.gaspricenigeria",
+      "package": "com.yourname.fyndfuel",
       "googleServicesFile": "./google-services.json",
       "config": {
         "googleMaps": {
@@ -51,7 +52,7 @@
       [
         "expo-location",
         {
-          "locationAlwaysAndWhenInUsePermission": "Allow GasPrice Nigeria to use your location to find nearby stations."
+          "locationAlwaysAndWhenInUsePermission": "Allow FYND FUEL to use your location to find nearby stations."
         }
       ],
       "expo-secure-store",
@@ -62,10 +63,12 @@
       "typedRoutes": true
     },
     "extra": {
-      "eas": {
-        "projectId": "974cfc38-9485-4dad-ac04-aa5c46b42a76"
+      "router": {
+        "origin": false
       },
-      "router": {}
+      "eas": {
+        "projectId": "e4ea8005-22d2-44d4-91b6-3ec9535b7a72"
+      }
     }
   }
 }
