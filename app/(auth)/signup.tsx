@@ -49,7 +49,8 @@ export default function SignUpScreen() {
             Alert.alert('Sign Up Failed', error.message);
         } else {
             Alert.alert('Success!', 'Your account has been created. Please check your email to verify your account before signing in.');
-            router.replace('/(auth)/signin');
+            // CORRECTED LINE: The path now correctly matches your file name `signIn.tsx`
+            router.replace('/signIn');
         }
         setLoading(false);
     }
@@ -67,7 +68,8 @@ export default function SignUpScreen() {
                 <Pressable style={[styles.button, loading && styles.buttonDisabled]} onPress={handleSignUp} disabled={loading}>
                     {loading ? <ActivityIndicator color={colors.primaryText} /> : <Text style={styles.buttonText}>Sign Up</Text>}
                 </Pressable>
-                <Link href="/(auth)/signin" asChild>
+                {/* This Link also needs to be corrected to match the file name */}
+                <Link href="/signIn" asChild> 
                     <Pressable>
                         <Text style={styles.footerText}>Already have an account? <Text style={styles.linkTextBold}>Sign in</Text></Text>
                     </Pressable>
